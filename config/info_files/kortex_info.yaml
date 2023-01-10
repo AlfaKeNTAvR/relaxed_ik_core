@@ -3,10 +3,10 @@ fixed_frame: "base_link"
 joint_names: [ [ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6", "joint_7", "end_effector" ] ]
 joint_ordering: [ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6", "joint_7" ]
 ee_fixed_joints: [ "tool_frame_joint" ]
-starting_config: [-0.043834566278268206, -0.03917616489950149, -3.116488365574161, -1.57024771561034, 0.17553119448929233, -0.04367530924508234, 1.399808867954686]
+starting_config: [-3.1330425749100934, -2.2349122699373734, -1.279305356002454, 0.03963680022192286, -0.04841200755989661, -0.09429827314196171, 1.6037409610597217]
 collision_file_name: "collision_kortex.yaml"
 collision_nn_file: "kortex_nn"
-path_to_src: "/home/lagenuina/withgripper_ws/src/relaxed_ik/src"
+path_to_src: "/home/lagenuina/kortex_ws/src/relaxed_ik/src"
 axis_types: [ [ "z", "z", "z", "z", "z", "z", "z" ] ]
 velocity_limits: [ 1.3963, 1.3963, 1.3963, 1.3963, 1.2218, 1.2218, 1.2218 ]
 joint_limits: [ [-3.14,3.14], [-2.41,2.41], [-3.14,3.14], [-2.66,2.66], [-3.14,3.14], [-2.23,2.23], [-3.14,3.14] ]
