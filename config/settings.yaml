@@ -24,15 +24,18 @@ loaded_robot:
 #            animation file in the animation_files folder
 obstacles:
   cuboids:
-    obstacles:
-  cuboids:
     - name: box1
-      scale: [1.35,0.14,0.25]
-      translation: [0.25, -0.25, -0.495]
-      rotation: [0.0,-2.35619,0.0]
+      scale: [4.5, 0.25, 0.40]
+      translation: [-0.05, -0.35, -0.55]
+      rotation: [0.0, -2.35619, 0.0]
       animation: static
     - name: box2
-      scale: [0.31,0.1,0.31]
-      translation: [0.0, 0.0, -0.35]
-      rotation: [0.0,0.0,0.0]
+      scale: [0.33, 0.07, 0.33]
+      translation: [-0.2, -0.02, -0.35]
+      rotation: [0.0, 0.0, 0.0]
+      animation: static
+    - name: box3
+      scale: [1.00, 0.07, 0.25]
+      translation: [-0.2, -0.02, -0.35]
+      rotation: [0.0, -2.35619, 0.0]
       animation: static
