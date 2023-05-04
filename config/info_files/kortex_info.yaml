@@ -3,7 +3,7 @@ fixed_frame: "base_link"
 joint_names: [ [ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6", "joint_7", "end_effector" ] ]
 joint_ordering: [ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6", "joint_7" ]
 ee_fixed_joints: [ "tool_frame_joint" ]
-starting_config: [0.0, 2.23402, 0.0, 0.0, 1.57, -1.57, 1.57]
+starting_config: [ 0.0, 2.0120, -3.1043, -0.7515, -0.0211, 1.1953, 1.5708 ]
 collision_file_name: "collision_kortex.yaml"
 collision_nn_file: "kortex_nn"
 path_to_src: "/home/lagenuina/withgripper_ws/src/relaxed_ik/src"
