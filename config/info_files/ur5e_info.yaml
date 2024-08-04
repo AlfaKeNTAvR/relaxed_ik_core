@@ -1,0 +1,17 @@
+urdf_file_name: "ur5e.urdf"
+fixed_frame: "base"
+joint_names: [ [ "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint", "wrist_1_joint", "wrist_2_joint", "wrist_3_joint" ] ]
+joint_ordering: [ "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint", "wrist_1_joint", "wrist_2_joint", "wrist_3_joint" ]
+ee_fixed_joints: [ "flange-tool0" ]
+starting_config: [3.14, -1.85, 1.85, 0.0, 1.57, 0.0]
+collision_file_name: "collision_ur5e.yaml"
+collision_nn_file: "ur5e_nn"
+path_to_src: "/home/alfakentavr/catkin_workspaces/relaxed_ik_ws/src/setup_relaxed_ik/relaxed_ik/src"
+axis_types: [ [ "z", "z", "z", "z", "z", "z" ] ]
+velocity_limits: [ 3.141592653589793, 3.141592653589793, 3.141592653589793, 3.141592653589793, 3.141592653589793, 3.141592653589793 ]
+joint_limits: [ [-6.283185307179586,6.283185307179586], [-6.283185307179586,6.283185307179586], [-3.141592653589793,3.141592653589793], [-6.283185307179586,6.283185307179586], [-6.283185307179586,6.283185307179586], [-6.283185307179586,6.283185307179586] ]
+displacements: [ [ [0.0,0.0,0.0], [-0.425,0.0,0.0], [-0.3922,0.0,0.1333], [0.0,-0.0997,-2.044881182297852e-11], [0.0,0.0996,-2.042830148012698e-11], [0.0,0.0,0.0] ] ]
+disp_offsets: [ [0.0,0.0,0.1625] ]
+rot_offsets: [ [ [0.0,0.0,0.0], [1.570796327,0.0,0.0], [0.0,0.0,0.0], [0.0,0.0,0.0], [1.570796327,0.0,0.0], [1.570796326589793,3.141592653589793,3.141592653589793], [1.5707963267948966,0.0,1.5707963267948966] ] ]
+joint_types: [ [ "revolute", "revolute", "revolute", "revolute", "revolute", "revolute" ] ]
+joint_state_define_func_file: "ur5e_joint_state_define"
