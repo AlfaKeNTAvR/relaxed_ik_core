@@ -7,24 +7,25 @@
   <!-- Links: -->
   <link name="world"/>
   <link name="chest_link"/>
+  <link name="chest_link_fixed"/>
   <joint name="chest_joint" type="prismatic">
     <parent link="world"/>
     <child link="chest_link"/>
     <axis xyz="0 0 1"/>
     <limit effort="1000.0" lower="0.0" upper="0.44" velocity="0.1"/>
-    <origin rpy="0 0 0" xyz="0 0 0.5775"/>
+    <origin rpy="0 0 3.14" xyz="0 0 0.5775"/>
+    <!-- <origin xyz="0 0 0" rpy="0 0 0"/> -->
+  </joint>
+  <joint name="chest_joint_fixed" type="fixed">
+    <parent link="chest_link"/>
+    <child link="chest_link_fixed"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
   </joint>
   <!-- Right Arm: -->
-  <link name="right_arm_mount"/>
-  <joint name="chest_to_right_arm_mount" type="fixed">
-    <parent link="chest_link"/>
-    <child link="right_arm_mount"/>
-    <origin rpy="0.7829999999999999 0.0 0.0" xyz="0.0 -0.142 -0.038"/>
-  </joint>
-  <joint name="right_arm_mount_to_arm" type="fixed">
-    <parent link="right_arm_mount"/>
+  <joint name="chest_to_right_base" type="fixed">
+    <parent link="chest_link_fixed"/>
     <child link="right/base_link"/>
-    <origin rpy="0 0 -1.57" xyz="0 0 0"/>
+    <origin rpy="0.0 0.7829999999999999 -1.5659999999999998" xyz="0.0 -0.142 -0.038"/>
   </joint>
   <!-- Run the macros -->
   <link name="right/base_link">
@@ -76,7 +77,7 @@
     <parent link="right/base_link"/>
     <child link="right/shoulder_link"/>
     <axis xyz="0 0 1"/>
-    <limit effort="39" lower="-3.14" upper="3.14" velocity="1.3963"/>
+    <limit effort="39" lower="-6.28" upper="6.28" velocity="1.3963"/>
   </joint>
   <link name="right/half_arm_1_link">
     <inertial>
@@ -134,7 +135,7 @@
     <parent link="right/half_arm_1_link"/>
     <child link="right/half_arm_2_link"/>
     <axis xyz="0 0 1"/>
-    <limit effort="39" lower="-3.14" upper="3.14" velocity="1.3963"/>
+    <limit effort="39" lower="-6.28" upper="6.28" velocity="1.3963"/>
   </joint>
   <link name="right/forearm_link">
     <inertial>
@@ -192,7 +193,7 @@
     <parent link="right/forearm_link"/>
     <child link="right/spherical_wrist_1_link"/>
     <axis xyz="0 0 1"/>
-    <limit effort="9" lower="-3.14" upper="3.14" velocity="1.2218"/>
+    <limit effort="9" lower="-6.28" upper="6.28" velocity="1.2218"/>
   </joint>
   <link name="right/spherical_wrist_2_link">
     <inertial>
@@ -250,7 +251,7 @@
     <parent link="right/spherical_wrist_2_link"/>
     <child link="right/bracelet_link"/>
     <axis xyz="0 0 1"/>
-    <limit effort="9" lower="-3.14" upper="3.14" velocity="1.2218"/>
+    <limit effort="9" lower="-6.28" upper="6.28" velocity="1.2218"/>
   </joint>
   <link name="right/end_effector_link"/>
   <joint name="right/end_effector" type="fixed">
