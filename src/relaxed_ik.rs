@@ -166,4 +166,8 @@ impl RelaxedIK {
             return (true, out_x)
         }
     }
+
+    pub fn reset(&mut self, x: Vec<f64>) {
+        self.vars.reset(x.clone());
+    }
 }

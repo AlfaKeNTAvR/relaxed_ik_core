@@ -65,3 +65,12 @@ fn solve_helper(pos_goals: Vec<f64>, quat_goals: Vec<f64>) -> Vec<f64> {
     
     x
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn reset(joint_state: *const c_double, joint_state_length: c_int) {
+    let x_slice: &[c_double] = std::slice::from_raw_parts(joint_state, joint_state_length as usize);
+    let x_vec = x_slice.to_vec();
+
+    // Access the RelaxedIK instance and call the reset method
+    R.lock().unwrap().reset(x_vec);
+}
