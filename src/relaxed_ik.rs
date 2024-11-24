@@ -30,11 +30,16 @@ impl RelaxedIK {
     }
 
     pub fn from_yaml_path(fp: String, mode: usize) -> Self {
-        let vars = RelaxedIKVars::from_yaml_path(fp.clone(), true, true);
+        let vars = RelaxedIKVars::from_yaml_path(fp.clone(), false, false);
         let mut om = ObjectiveMaster::relaxed_ik(vars.robot.num_chains, vars.objective_mode.clone());
         if mode == 0 {
             om = ObjectiveMaster::standard_ik(vars.robot.num_chains);
         }
+
+        // Print to verify the settings
+        // println!("RelaxedIKVars initialized with:");
+        // println!("  position_mode_relative: {}", vars.position_mode_relative);
+        // println!("  rotation_mode_relative: {}", vars.rotation_mode_relative);
 
         let groove = OptimizationEngineOpen::new(vars.robot.num_dof.clone());
         let groove_nlopt = OptimizationEngineNLopt::new();
