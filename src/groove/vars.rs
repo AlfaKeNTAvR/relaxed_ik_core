@@ -216,4 +216,24 @@ impl RelaxedIKVars {
             }
         }
     }
+
+    pub fn reset(&mut self, init_state: Vec<f64>) {
+        self.prev_state3 = init_state.clone();
+        self.prev_state2 = init_state.clone();
+        self.prev_state = init_state.clone();
+        self.xopt = init_state.clone();
+        self.init_state = init_state.clone();
+
+        let mut init_ee_positions: Vec<Vector3<f64>> = Vec::new();
+        let mut init_ee_quats: Vec<UnitQuaternion<f64>> = Vec::new();
+        let pose = self.robot.get_ee_pos_and_quat_immutable(&init_state);
+
+        for i in 0..pose.len() {
+            init_ee_positions.push(pose[i].0);
+            init_ee_quats.push(pose[i].1);
+        }
+
+        self.init_ee_positions = init_ee_positions.clone();
+        self.init_ee_quats = init_ee_quats.clone();
+    }
 }
