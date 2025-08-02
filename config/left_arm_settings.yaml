@@ -22,10 +22,20 @@ loaded_robot:
 #            The option "interactive" means that you will be able to drag the obstacle around with your mouse. 
 #            If you want to drive the robot with an animation file, please make sure to put the corresponding 
 #            animation file in the animation_files folder
-# obstacles:
-#   cuboids:
-#     - name: box1
-#       scale: [1.0, 1.0, 1.0]
-#       translation: [0.0, 0.0, 0.0]
-#       rotation: [0.0, 0.0, 0.0]
-#       animation: static
+obstacles:
+  cuboids:
+    - name: stand
+      scale: [4.5, 0.180, 0.25]
+      translation: [-0.04, 0.15, -0.165]
+      rotation: [0.0, -2.35619, 0.0]
+      animation: static
+    - name: shoulders
+      scale: [0.33, 0.08, 0.33]
+      translation: [-0.04, 0.0, -0.165]
+      rotation: [0.0, 0.0, 0.0]
+      animation: static
+    - name: torso
+      scale: [0.6, 0.08, 0.08]
+      translation: [-0.116, 0.0, -0.088]
+      rotation: [0.0, -2.35619, 0.0]
+      animation: static

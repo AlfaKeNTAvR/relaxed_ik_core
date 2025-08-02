@@ -53,7 +53,7 @@ pub struct RelaxedIKVars {
     pub objective_mode: String
 }
 impl RelaxedIKVars {
-    pub fn from_yaml_path(fp: String, position_mode_relative: bool, rotation_mode_relative: bool) -> Self {
+    pub fn from_yaml_path(fp: String, position_mode_relative: bool, rotation_mode_relative: bool, settings_file_name: String) -> Self {
         let ifp = InfoFileParser::from_yaml_path(fp.clone());
         let mut robot = Robot::from_yaml_path(fp.clone());
         let num_chains = ifp.joint_names.len();
@@ -73,7 +73,7 @@ impl RelaxedIKVars {
         let collision_nn_path = get_path_to_src()+ "relaxed_ik_core/config/collision_nn_rust/" + ifp.collision_nn_file.as_str() + ".yaml";
         let collision_nn = CollisionNN::from_yaml_path(collision_nn_path);
 
-        let fp = get_path_to_src() + "relaxed_ik_core/config/settings.yaml";
+        let fp = get_path_to_src() + "relaxed_ik_core/config/" + &settings_file_name;
         let fp2 = fp.clone();
         let env_collision_file = EnvCollisionFileParser::from_yaml_path(fp);
         let frames = robot.get_frames_immutable(&ifp.starting_config.clone());

@@ -1,11 +1,23 @@
 use crate::relaxed_ik;
 use crate::utils_rust::subscriber_utils::EEPoseGoalsSubscriber;
-use std::sync::{Arc, Mutex};
-use nalgebra::{Vector3, UnitQuaternion, Quaternion,Translation3, Isometry3};
+use nalgebra::{Vector3, UnitQuaternion, Quaternion, Translation3, Isometry3};
 use std::os::raw::{*};
+use std::sync::{Arc, Mutex};
 
-lazy_static! {
-    static ref R: Mutex<relaxed_ik::RelaxedIK> = Mutex::new(relaxed_ik::RelaxedIK::from_loaded(1));
+/// Global mutable static storage for RelaxedIK instance
+static mut R: Option<Mutex<relaxed_ik::RelaxedIK>> = None;
+
+#[no_mangle]
+pub unsafe extern "C" fn initialize_relaxed_ik(settings_file_ptr: *const c_char, mode: c_int) {
+    assert!(!settings_file_ptr.is_null(), "Settings file path is null!");
+
+    let c_str = std::ffi::CStr::from_ptr(settings_file_ptr);
+    let settings_file = c_str.to_str().expect("Invalid UTF-8 string").to_string();
+
+    println!("[RelaxedIK] Initializing with settings file: {}", settings_file);
+
+    let ik = relaxed_ik::RelaxedIK::from_settings_file(settings_file, mode as usize);
+    R = Some(Mutex::new(ik));
 }
 
 #[no_mangle]
@@ -28,12 +40,20 @@ pub unsafe extern "C" fn dynamic_obstacle_cb(name: *const c_char, pos_arr: *cons
     let rot = UnitQuaternion::from_quaternion(tmp_q);
     let pos = Isometry3::from_parts(ts, rot);
 
-    R.lock().unwrap().vars.env_collision.update_dynamic_obstacle(name_str, pos);
+    unsafe {
+        R.as_ref()
+            .expect("RelaxedIK not initialized!")
+            .lock()
+            .unwrap()
+            .vars
+            .env_collision
+            .update_dynamic_obstacle(name_str, pos);
+    }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn solve(pos_arr: *const c_double, pos_length: c_int, 
-    quat_arr: *const c_double, quat_length: c_int) -> relaxed_ik::Opt {
+pub unsafe extern "C" fn solve(pos_arr: *const c_double, pos_length: c_int,
+                                quat_arr: *const c_double, quat_length: c_int) -> relaxed_ik::Opt {
     assert!(!pos_arr.is_null(), "Null pointer for pos goals!");
     assert!(!quat_arr.is_null(), "Null pointer for quat goals!");
 
@@ -46,23 +66,39 @@ pub unsafe extern "C" fn solve(pos_arr: *const c_double, pos_length: c_int,
     let ja = solve_helper(pos_vec, quat_vec);
     let ptr = ja.as_ptr();
     let len = ja.len();
-    std::mem::forget(ja);
-    relaxed_ik::Opt {data: ptr, length: len as c_int}
+    std::mem::forget(ja); // Prevents deallocation; memory is now owned externally
+
+    relaxed_ik::Opt { data: ptr, length: len as c_int }
 }
 
 fn solve_helper(pos_goals: Vec<f64>, quat_goals: Vec<f64>) -> Vec<f64> {
     let arc = Arc::new(Mutex::new(EEPoseGoalsSubscriber::new()));
     let mut g = arc.lock().unwrap();
-    
-    for i in 0..R.lock().unwrap().vars.robot.num_chains {
-        g.pos_goals.push( Vector3::new(pos_goals[3*i], pos_goals[3*i+1], pos_goals[3*i+2]) );
-        let tmp_q = Quaternion::new(quat_goals[4*i+3], quat_goals[4*i], quat_goals[4*i+1], quat_goals[4*i+2]);
-        g.quat_goals.push( UnitQuaternion::from_quaternion(tmp_q) );
+
+    let num_chains = unsafe {
+        R.as_ref()
+            .expect("RelaxedIK not initialized!")
+            .lock()
+            .unwrap()
+            .vars
+            .robot
+            .num_chains
+    };
+
+    for i in 0..num_chains {
+        g.pos_goals.push(Vector3::new(pos_goals[3 * i], pos_goals[3 * i + 1], pos_goals[3 * i + 2]));
+        let tmp_q = Quaternion::new(quat_goals[4 * i + 3], quat_goals[4 * i], quat_goals[4 * i + 1], quat_goals[4 * i + 2]);
+        g.quat_goals.push(UnitQuaternion::from_quaternion(tmp_q));
     }
-    
-    let x = R.lock().unwrap().solve(&g);
-    // println!("{:?}", x);
-    
+
+    let x = unsafe {
+        R.as_ref()
+            .expect("RelaxedIK not initialized!")
+            .lock()
+            .unwrap()
+            .solve(&g)
+    };
+
     x
 }
 
@@ -71,6 +107,11 @@ pub unsafe extern "C" fn reset(joint_state: *const c_double, joint_state_length:
     let x_slice: &[c_double] = std::slice::from_raw_parts(joint_state, joint_state_length as usize);
     let x_vec = x_slice.to_vec();
 
-    // Access the RelaxedIK instance and call the reset method
-    R.lock().unwrap().reset(x_vec);
+    unsafe {
+        R.as_ref()
+            .expect("RelaxedIK not initialized!")
+            .lock()
+            .unwrap()
+            .reset(x_vec);
+    }
 }

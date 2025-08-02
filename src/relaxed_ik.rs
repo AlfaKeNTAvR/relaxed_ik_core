@@ -23,14 +23,28 @@ pub struct RelaxedIK {
 }
 
 impl RelaxedIK {
-    pub fn from_info_file_name(info_file_name: String, mode: usize) -> Self {
+    // pub fn from_info_file_name(info_file_name: String, mode: usize) -> Self {
+    //     let path_to_src = get_path_to_src();
+    //     let fp = path_to_src + "relaxed_ik_core/config/info_files/" + info_file_name.as_str();
+    //     RelaxedIK::from_yaml_path(fp.clone(), mode.clone())
+    // }
+
+    pub fn from_settings_file(settings_file: String, mode: usize) -> Self {
         let path_to_src = get_path_to_src();
-        let fp = path_to_src + "relaxed_ik_core/config/info_files/" + info_file_name.as_str();
-        RelaxedIK::from_yaml_path(fp.clone(), mode.clone())
+        let settings_path = path_to_src.clone() + "relaxed_ik_core/config/" + &settings_file;
+
+        println!("[RelaxedIK] Loading settings.yaml: {}", settings_path);
+        let info_file_name = get_info_file_name(settings_path.clone());
+        println!("[RelaxedIK] Extracted info_file_name: {}", info_file_name);
+
+        let info_file_path = path_to_src + "relaxed_ik_core/config/info_files/" + &info_file_name;
+        println!("[RelaxedIK] Full path to info file: {}", info_file_path);
+
+        RelaxedIK::from_yaml_path(info_file_path, mode, settings_file)
     }
 
-    pub fn from_yaml_path(fp: String, mode: usize) -> Self {
-        let vars = RelaxedIKVars::from_yaml_path(fp.clone(), false, false);
+    pub fn from_yaml_path(fp: String, mode: usize, settings_file: String) -> Self {
+        let vars = RelaxedIKVars::from_yaml_path(fp.clone(), false, false, settings_file.clone());
         let mut om = ObjectiveMaster::relaxed_ik(vars.robot.num_chains, vars.objective_mode.clone());
         if mode == 0 {
             om = ObjectiveMaster::standard_ik(vars.robot.num_chains);
@@ -47,12 +61,12 @@ impl RelaxedIK {
         Self{vars, om, groove, groove_nlopt}
     }
 
-    pub fn from_loaded(mode: usize) -> Self {
-        let path_to_src = get_path_to_src();
-        let fp1 = path_to_src +  "relaxed_ik_core/config/settings.yaml";
-        let info_file_name = get_info_file_name(fp1);
-        RelaxedIK::from_info_file_name(info_file_name.clone(), mode.clone())
-    }
+    // pub fn from_loaded(mode: usize) -> Self {
+    //     let path_to_src = get_path_to_src();
+    //     let fp1 = path_to_src +  "relaxed_ik_core/config/settings.yaml";
+    //     let info_file_name = get_info_file_name(fp1);
+    //     RelaxedIK::from_info_file_name(info_file_name.clone(), mode.clone())
+    // }
 
     pub fn solve(&mut self, ee_sub: &EEPoseGoalsSubscriber) -> Vec<f64> {
         let mut out_x = self.vars.xopt.clone();

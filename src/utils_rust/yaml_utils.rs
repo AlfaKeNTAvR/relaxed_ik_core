@@ -314,6 +314,9 @@ pub struct EnvCollisionFileParser {
 impl EnvCollisionFileParser {
     pub fn from_yaml_path(fp: String) -> Self {
         let fp2 = fp.clone();
+
+        println!("[EnvCollisionFileParser] Loading env collision file: {}", fp2);
+
         let docs = get_yaml_obj(fp);
         let doc = &docs[0];
 
@@ -333,9 +336,9 @@ impl EnvCollisionFileParser {
             for i in 0..l {
                 let name = cuboids_list[i]["name"].as_str().unwrap().to_string();
                 let scale = cuboids_list[i]["scale"].as_vec().unwrap();
-                let sx_half = scale[0].as_f64().unwrap();
-                let sy_half = scale[1].as_f64().unwrap();
-                let sz_half = scale[2].as_f64().unwrap();
+                let sx_half = scale[0].as_f64().unwrap() / 2.0;
+                let sy_half = scale[1].as_f64().unwrap() / 2.0;
+                let sz_half = scale[2].as_f64().unwrap() / 2.0;
 
                 let rots = cuboids_list[i]["rotation"].as_vec().unwrap();
                 let rx = rots[0].as_f64().unwrap();
