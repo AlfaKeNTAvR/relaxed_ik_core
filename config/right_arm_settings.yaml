@@ -46,9 +46,11 @@ obstacles:
 # positive by the right-hand rule about it.  Nothing else in the objective set
 # constrains it, so without this the elbow keeps whatever value it drifted to.
 #
-# target_deg is specific to freight1943's arm mounting (freight1803 uses +/-85
-# with the opposite signs).  The parked pose measured 121.7 deg on the right
-# arm and -145.1 deg on the left; the targets keep those signs.
+# target_deg is specific to freight1943's arm mounting.  The arm bases here are
+# rolled 90 deg on the torso, so zero is not the floor direction it is on
+# freight1803 (+/-85 there).  -135 right / +135 left points the elbows down and
+# slightly back in the robot frame; the opposite signs pointed them straight out
+# to the sides.
 #
 # weight is small next to the pose-matching objectives at 1.0, which is what
 # confines this to the null space.  Raise it for a firmer elbow, lower it if
@@ -59,7 +61,7 @@ obstacles:
 # spherical_wrist_1_link.
 swivel_posture:
   enabled: true
-  target_deg: 135.0
+  target_deg: -135.0
   weight: 0.2
   shoulder_idx: 1
   elbow_idx: 3
