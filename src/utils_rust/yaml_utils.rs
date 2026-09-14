@@ -447,6 +447,75 @@ pub fn get_info_file_name(fp: String) -> String {
     info_file_name
 }
 
+/// Optional bias holding the redundant elbow swivel near a chosen angle.
+///
+/// The swivel is the rotation of the elbow about the shoulder-to-wrist axis.  A
+/// 7 degree of freedom arm running a 6 degree of freedom task leaves it free, so
+/// without a bias it keeps whatever value it happened to drift to.  Absent from
+/// the settings file this stays disabled and the solver behaves exactly as before.
+#[derive(Clone, Debug)]
+pub struct SwivelPostureConfig {
+    pub enabled: bool,
+    /// Preferred swivel angle in radians, in the arm's own base frame.
+    pub target: f64,
+    /// Objective weight.  Small relative to the pose-matching objectives at 1.0,
+    /// so this can only steer inside the null space.
+    pub weight: f64,
+    /// Indices into the frame position list for the three points that define the
+    /// swivel.  Chain-specific, so they are configured rather than hardcoded.
+    pub shoulder_idx: usize,
+    pub elbow_idx: usize,
+    pub wrist_idx: usize,
+}
+
+impl SwivelPostureConfig {
+    pub fn disabled() -> Self {
+        Self {enabled: false, target: 0.0, weight: 0.0,
+              shoulder_idx: 0, elbow_idx: 0, wrist_idx: 0}
+    }
+}
+
+/// Reads a number that the yaml parser may have typed as either int or float.
+fn read_number(y: &Yaml, default: f64) -> f64 {
+    if let Some(value) = y.as_f64() {
+        return value;
+    }
+    if let Some(value) = y.as_i64() {
+        return value as f64;
+    }
+    default
+}
+
+pub fn get_swivel_posture_config(fp: String) -> SwivelPostureConfig {
+    let yaml_files = get_yaml_obj(fp);
+    let yaml_file = &yaml_files[0];
+    let node = &yaml_file["swivel_posture"];
+
+    if node.is_badvalue() {
+        return SwivelPostureConfig::disabled();
+    }
+
+    let enabled = node["enabled"].as_bool().unwrap_or(false);
+    let target_deg = read_number(&node["target_deg"], 0.0);
+    let weight = read_number(&node["weight"], 0.0);
+    let shoulder_idx = node["shoulder_idx"].as_i64().unwrap_or(1) as usize;
+    let elbow_idx = node["elbow_idx"].as_i64().unwrap_or(3) as usize;
+    let wrist_idx = node["wrist_idx"].as_i64().unwrap_or(4) as usize;
+
+    println!("[RelaxedIK] Swivel posture: enabled={}, target={} deg, weight={}, \
+indices s/e/w = {}/{}/{}", enabled, target_deg, weight, shoulder_idx, elbow_idx, wrist_idx);
+
+    SwivelPostureConfig {
+        enabled,
+        target: target_deg.to_radians(),
+        weight,
+        shoulder_idx,
+        elbow_idx,
+        wrist_idx,
+    }
+}
+
+
 
 pub fn parse_list_of_floats_1(y: &Yaml) -> Vec<f64> {
     let mut ret: Vec<f64> = Vec::new();

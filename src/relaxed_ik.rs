@@ -45,7 +45,8 @@ impl RelaxedIK {
 
     pub fn from_yaml_path(fp: String, mode: usize, settings_file: String) -> Self {
         let vars = RelaxedIKVars::from_yaml_path(fp.clone(), false, false, settings_file.clone());
-        let mut om = ObjectiveMaster::relaxed_ik(vars.robot.num_chains, vars.objective_mode.clone());
+        let mut om = ObjectiveMaster::relaxed_ik(vars.robot.num_chains, vars.objective_mode.clone(),
+                                                 &vars.swivel_posture);
         if mode == 0 {
             om = ObjectiveMaster::standard_ik(vars.robot.num_chains);
         }

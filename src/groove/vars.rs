@@ -50,7 +50,8 @@ pub struct RelaxedIKVars {
     pub rotation_mode_relative: bool, // if false, will be absolute
     pub collision_nn: CollisionNN,
     pub env_collision: RelaxedIKEnvCollision,
-    pub objective_mode: String
+    pub objective_mode: String,
+    pub swivel_posture: SwivelPostureConfig
 }
 impl RelaxedIKVars {
     pub fn from_yaml_path(fp: String, position_mode_relative: bool, rotation_mode_relative: bool, settings_file_name: String) -> Self {
@@ -75,15 +76,17 @@ impl RelaxedIKVars {
 
         let fp = get_path_to_src() + "relaxed_ik_core/config/" + &settings_file_name;
         let fp2 = fp.clone();
+        let fp3 = fp.clone();
         let env_collision_file = EnvCollisionFileParser::from_yaml_path(fp);
         let frames = robot.get_frames_immutable(&ifp.starting_config.clone());
         let env_collision = RelaxedIKEnvCollision::init_collision_world(env_collision_file, &frames);
         let objective_mode = get_objective_mode(fp2);
+        let swivel_posture = get_swivel_posture_config(fp3);
 
         RelaxedIKVars{robot, sampler, init_state: ifp.starting_config.clone(), xopt: ifp.starting_config.clone(),
             prev_state: ifp.starting_config.clone(), prev_state2: ifp.starting_config.clone(), prev_state3: ifp.starting_config.clone(),
             goal_positions, goal_quats, init_ee_positions, init_ee_quats, position_mode_relative, rotation_mode_relative, collision_nn, 
-            env_collision, objective_mode}
+            env_collision, objective_mode, swivel_posture}
     }
 
     pub fn update(&mut self, xopt: Vec<f64>) {
