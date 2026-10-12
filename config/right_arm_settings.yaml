@@ -39,3 +39,24 @@ obstacles:
       translation: [-0.116, 0.0, -0.088]
       rotation: [0.0, -2.35619, 0.0]
       animation: static
+
+# Holds the redundant elbow swivel near a preferred angle.  The swivel is the
+# rotation of the elbow about the shoulder-to-wrist axis, measured in the arm's
+# own base_link frame: zero along base -z projected perpendicular to that axis,
+# positive by the right-hand rule about it.  Nothing else in the objective set
+# constrains it, so without this the elbow keeps whatever value it drifted to.
+#
+# weight is small next to the pose-matching objectives at 1.0, which is what
+# confines this to the null space.  Raise it for a firmer elbow, lower it if
+# end-effector tracking starts to feel dragged during fast teleoperation.
+#
+# The indices pick the shoulder, elbow and wrist points out of the kinematic
+# chain's frame list.  For the Gen3 that is half_arm_1_link, forearm_link and
+# spherical_wrist_1_link.
+swivel_posture:
+  enabled: true
+  target_deg: -85.0
+  weight: 0.2
+  shoulder_idx: 1
+  elbow_idx: 3
+  wrist_idx: 4

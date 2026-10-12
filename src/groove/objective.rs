@@ -209,6 +209,100 @@ impl ObjectiveTrait for JointLimits {
     }
 }
 
+/// Smallest shoulder-to-wrist separation, and smallest elbow offset from that
+/// axis, for which the swivel angle is meaningful.  Below either of these the
+/// arm is close to straight and the angle is numerically undefined, so the
+/// objective reports no cost rather than a spurious gradient.  Metres.
+const MIN_SWIVEL_AXIS_M: f64 = 0.05;
+const MIN_ELBOW_OFFSET_M: f64 = 0.02;
+
+/// Bias holding the elbow swivel near a preferred angle.
+///
+/// The swivel is the rotation of the elbow about the shoulder-to-wrist axis, and
+/// it is the redundant coordinate of a 7 degree of freedom arm running a 6 degree
+/// of freedom task.  Nothing else in the objective set references it, so without
+/// this the elbow keeps whatever configuration it drifted into.
+///
+/// This carries a small weight next to the pose-matching objectives at 1.0.  Any
+/// direction that improves the swivel but disturbs the end-effector pose loses
+/// that trade, which leaves only the directions that hold the pose: the null
+/// space.  No Jacobian or projection is needed, the cost landscape does it.
+///
+/// Angle convention, matching the script the target was recorded with: measured
+/// in the arm's own base frame, zero along base -z projected perpendicular to the
+/// shoulder-wrist axis, positive turning about that axis by the right-hand rule.
+pub struct SwivelPosture {
+    pub arm_idx: usize
+}
+impl SwivelPosture {
+    pub fn new(arm_idx: usize) -> Self {Self{arm_idx}}
+
+    /// Returns the swivel angle in radians, or None where it is undefined.
+    fn compute_swivel_angle(
+        &self,
+        v: &vars::RelaxedIKVars,
+        frames: &Vec<(Vec<nalgebra::Vector3<f64>>, Vec<nalgebra::UnitQuaternion<f64>>)>
+    ) -> Option<f64> {
+        let cfg = &v.swivel_posture;
+        let positions = &frames[self.arm_idx].0;
+        if positions.len() <= cfg.shoulder_idx.max(cfg.elbow_idx).max(cfg.wrist_idx) {
+            return None;
+        }
+
+        let shoulder = positions[cfg.shoulder_idx];
+        let elbow = positions[cfg.elbow_idx];
+        let wrist = positions[cfg.wrist_idx];
+
+        let axis_unnormalized = wrist - shoulder;
+        if axis_unnormalized.norm() < MIN_SWIVEL_AXIS_M {
+            return None;
+        }
+        let axis = axis_unnormalized.normalize();
+
+        let elbow_offset = elbow - shoulder;
+        let elbow_perpendicular = elbow_offset - axis * elbow_offset.dot(&axis);
+        if elbow_perpendicular.norm() < MIN_ELBOW_OFFSET_M {
+            return None;
+        }
+
+        // Zero reference: base -z with the axis component removed.  Where the arm
+        // points nearly straight down that projection collapses, so fall back to
+        // base +x, which cannot be parallel to the axis at the same time.
+        let down = Vector3::new(0.0, 0.0, -1.0);
+        let mut reference = down - axis * down.dot(&axis);
+        if reference.norm() < MIN_ELBOW_OFFSET_M {
+            let forward = Vector3::new(1.0, 0.0, 0.0);
+            reference = forward - axis * forward.dot(&axis);
+        }
+        let reference = reference.normalize();
+        let perpendicular = axis.cross(&reference);
+
+        Some(elbow_perpendicular.dot(&perpendicular)
+            .atan2(elbow_perpendicular.dot(&reference)))
+    }
+}
+impl ObjectiveTrait for SwivelPosture {
+    fn call(&self, x: &[f64], v: &vars::RelaxedIKVars, frames: &Vec<(Vec<nalgebra::Vector3<f64>>, Vec<nalgebra::UnitQuaternion<f64>>)>) -> f64 {
+        let swivel_angle = match self.compute_swivel_angle(v, frames) {
+            Some(angle) => angle,
+            None => return 0.0,
+        };
+
+        // Wrap to (-pi, pi] so the bias always turns the short way round.
+        let mut error = swivel_angle - v.swivel_posture.target;
+        error = error - 2.0 * std::f64::consts::PI
+            * ((error + std::f64::consts::PI) / (2.0 * std::f64::consts::PI)).floor();
+
+        groove_loss(error, 0.0, 2, 0.5, 0.1, 2)
+    }
+
+    /// Lite mode carries end-effector poses only, with no intermediate frames to
+    /// locate the elbow from, so the bias does not apply there.
+    fn call_lite(&self, x: &[f64], v: &vars::RelaxedIKVars, ee_poses: &Vec<(nalgebra::Vector3<f64>, nalgebra::UnitQuaternion<f64>)>) -> f64 {
+        0.0
+    }
+}
+
 pub struct MinimizeVelocity;
 impl ObjectiveTrait for MinimizeVelocity {
     fn call(&self, x: &[f64], v: &vars::RelaxedIKVars, frames: &Vec<(Vec<nalgebra::Vector3<f64>>, Vec<nalgebra::UnitQuaternion<f64>>)>) -> f64 {

@@ -1,5 +1,6 @@
 use crate::groove::objective::*;
 use crate::groove::vars::RelaxedIKVars;
+use crate::utils_rust::yaml_utils::SwivelPostureConfig;
 
 pub struct ObjectiveMaster {
     pub objectives: Vec<Box<dyn ObjectiveTrait + Send>>,
@@ -43,7 +44,8 @@ impl ObjectiveMaster {
         }
     }
 
-    pub fn relaxed_ik(num_chains: usize, objective_mode: String) -> Self {
+    pub fn relaxed_ik(num_chains: usize, objective_mode: String,
+                      swivel_posture: &SwivelPostureConfig) -> Self {
         let mut objectives: Vec<Box<dyn ObjectiveTrait + Send>> = Vec::new();
         let mut weight_priors: Vec<f64> = Vec::new();
         for i in 0..num_chains {
@@ -69,6 +71,14 @@ impl ObjectiveMaster {
         objectives.push(Box::new(MinimizeJerk));    weight_priors.push(1.0);
         objectives.push(Box::new(JointLimits));    weight_priors.push(1.0);
         objectives.push(Box::new(NNSelfCollision));    weight_priors.push(1.0);
+
+        // Appended last so the per-chain indices tune_weight_priors relies on stay put.
+        if swivel_posture.enabled {
+            for i in 0..num_chains {
+                objectives.push(Box::new(SwivelPosture::new(i)));
+                weight_priors.push(swivel_posture.weight);
+            }
+        }
 
         Self{objectives, num_chains, weight_priors, lite: false, finite_diff_grad: true} // fix this
     }
