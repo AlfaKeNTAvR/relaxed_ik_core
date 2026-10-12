@@ -60,7 +60,7 @@ obstacles:
 # chain's frame list.  For the Gen3 that is half_arm_1_link, forearm_link and
 # spherical_wrist_1_link.
 swivel_posture:
-  enabled: true
+  enabled: false
   target_deg: 135.0
   weight: 0.2
   shoulder_idx: 1
